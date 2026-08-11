@@ -1,0 +1,27 @@
+name: Run Python Auto-Generator
+
+on:
+  workflow_dispatch: # Allows manual trigger from GitHub UI
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/python-spec@v4
+        with:
+          python-version: '3.10'
+
+      - name: Run Script
+        run: python build_github_repo.py
+
+      - name: Commit and Push Generated Files
+        run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          git add .
+          git commit -m "Auto-generated repository files" || exit 0
+          git push
