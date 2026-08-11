@@ -1,0 +1,62 @@
+// --- GROUP 1: CORE REVENUE & COST ---
+
+Total Invoiced Revenue = 
+SUM(fact_invoices[invoice_amount])
+
+Total Delivery Hours = 
+SUM(fact_timesheets[hours])
+
+Permanent Hours = 
+CALCULATE(
+    SUM(fact_timesheets[hours]),
+    dim_staff[engagement_type] = "Permanent"
+)
+
+Contractor Hours = 
+CALCULATE(
+    SUM(fact_timesheets[hours]),
+    dim_staff[engagement_type] = "Contract"
+)
+
+Contractor Ratio % = 
+DIVIDE([Contractor Hours], [Total Delivery Hours], 0)
+
+Known Delivery Cost = 
+SUM(fact_timesheets[known_cost_gbp])
+
+Imputed Delivery Cost = 
+SUM(fact_timesheets[imputed_cost_gbp])
+
+
+// --- GROUP 2: GROSS MARGIN & PROFITABILITY ---
+
+Known Gross Margin (£) = 
+[Total Invoiced Revenue] - [Known Delivery Cost]
+
+Known Gross Margin (%) = 
+DIVIDE([Known Gross Margin (£)], [Total Invoiced Revenue], 0)
+
+Imputed Gross Margin (£) = 
+[Total Invoiced Revenue] - [Imputed Delivery Cost]
+
+Imputed Gross Margin (%) = 
+DIVIDE([Imputed Gross Margin (£)], [Total Invoiced Revenue], 0)
+
+YoY Margin Compression = 
+VAR PrevYearMargin = 
+    CALCULATE([Known Gross Margin (%)], SAMEPERIODLASTYEAR(dim_date[full_date]))
+RETURN
+    [Known Gross Margin (%)] - PrevYearMargin
+
+
+// --- GROUP 3: GENERAL LEDGER RECONCILIATION ---
+
+GL Recognised Revenue = 
+SUM(fact_gl_revenue[revenue_recognised])
+
+Billing vs GL Variance (£) = 
+[Total Invoiced Revenue] - [GL Recognised Revenue]
+
+Billing vs GL Variance (%) = 
+DIVIDE([Billing vs GL Variance (£)], [GL Recognised Revenue], 0)
+"""
